@@ -3,7 +3,7 @@ import { resizeService } from './resize.service';
 
 @Controller('resize')
 export class ResizeController {
-  @Post()
+  @Post('/base64')
   async Index(@Body() body: { imgData: string }): Promise<Record<string, any>> {
     // console.log(body.imgData);
     const data = await resizeService.resize(
