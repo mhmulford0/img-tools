@@ -1,3 +1,4 @@
+/*eslint space-before-blocks: "error"*/
 import {
   Body,
   Controller,
@@ -19,7 +20,6 @@ export class ResizeController {
   async Base64(
     @Body() body: { imgData: string; width: number; height: number },
   ): Promise<Record<string, any>> {
-    // console.log(body.imgData);
     const data = await resizeService.base64(
       {
         base64ImageData: body.imgData,
