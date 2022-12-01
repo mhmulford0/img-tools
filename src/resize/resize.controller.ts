@@ -7,7 +7,6 @@ import {
   ParseFilePipe,
   FileTypeValidator,
   MaxFileSizeValidator,
-  Res,
   Header,
   StreamableFile,
 } from '@nestjs/common';
