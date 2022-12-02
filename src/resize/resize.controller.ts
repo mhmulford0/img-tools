@@ -1,57 +1,69 @@
-/*eslint space-before-blocks: "error"*/
-import {
-  Body,
-  Controller,
-  Post,
-  UseInterceptors,
-  UploadedFile,
-  ParseFilePipe,
-  FileTypeValidator,
-  MaxFileSizeValidator,
-  Header,
-  StreamableFile,
-} from '@nestjs/common';
+import * as core from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { resizeService } from './resize.service';
 
-@Controller('resize')
+@core.Controller('resize')
 export class ResizeController {
-  @Post('/base64')
+  @core.Post('/base64')
   async Base64(
-    @Body() body: { imgData: string; width: number; height: number },
-  ): Promise<Record<string, any>> {
-    const data = await resizeService.base64(
-      {
-        base64ImageData: body.imgData,
-        timestamp: Date.now(),
-      },
-      200,
-      200,
-    );
-    return {
-      data,
-    };
+    @core.Body() body: { imgData: string; width: number; height: number },
+  ): Promise<{ data: string }> {
+    try {
+      const data = await resizeService.base64(
+        {
+          base64ImageData: body.imgData,
+          timestamp: Date.now(),
+        },
+        body.width,
+        body.height,
+      );
+      return { data };
+    } catch (error) {
+      throw new core.InternalServerErrorException(
+        'Could not complete request: generic error',
+      );
+    }
   }
 
-  @Post('/file')
-  @Header('Content-Type', 'application/json')
-  @Header(
+  @core.Post('/file')
+  @core.UseInterceptors(FileInterceptor('file'))
+  @core.Header(
     'Content-Disposition',
     `attachment; filename="${Date.now().toString()}"`,
   )
-  @UseInterceptors(FileInterceptor('file'))
   async File(
-    @UploadedFile(
-      new ParseFilePipe({
+    @core.Query('width') width: string,
+    @core.Query('height') height: string,
+    @core.UploadedFile(
+      new core.ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 4e7 }),
-          new FileTypeValidator({ fileType: 'jpeg' }),
+          new core.MaxFileSizeValidator({ maxSize: 4e7 }),
+          new core.FileTypeValidator({
+            fileType: RegExp(/(jpg|jpeg|png)/g),
+          }),
         ],
       }),
     )
     file: Express.Multer.File,
   ) {
-    const stream = await resizeService.file(file, 100, 100);
-    return new StreamableFile(stream);
+    if (typeof width === undefined || typeof height === undefined) {
+      throw new core.NotAcceptableException('Width and height required');
+    }
+
+    try {
+      const mimeType = file.mimetype.split('/')[1];
+      const stream = await resizeService.file(
+        file,
+        parseInt(width),
+        parseInt(height),
+        mimeType,
+      );
+      return new core.StreamableFile(stream);
+    } catch (error) {
+      console.log(error);
+      throw new core.InternalServerErrorException(
+        'Could not complete request: generic error',
+      );
+    }
   }
 }
