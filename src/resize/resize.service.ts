@@ -2,6 +2,9 @@ import sharp from 'sharp';
 import { createReadStream, ReadStream } from 'fs';
 import { join } from 'path';
 import { BadRequestException } from '@nestjs/common';
+import { Job, Queue, Worker } from 'bullmq';
+
+const queue = new Queue('resize-img');
 
 type Base64Data = {
   timestamp: number;
@@ -19,7 +22,7 @@ interface Resizer {
     width: number,
     height: number,
     mimeType: string,
-  ): Promise<ReadStream> | TypeError;
+  ): Promise<string> | TypeError;
 }
 
 class ResizeService implements Resizer {
@@ -48,20 +51,22 @@ class ResizeService implements Resizer {
     const tmpName = Date.now().toString();
 
     try {
-      await sharp(data.buffer)
-        .resize({ width, height })
-        .toFile(`tmp/${tmpName}.${mimeType}`);
-
-      const fileStream = createReadStream(
-        join(process.cwd(), `tmp/${tmpName}.${mimeType}`),
-      );
-
-      return fileStream;
+      queue.add('resize-img', {
+        imgData: data.buffer,
+        width,
+        height,
+        mimeType,
+        tmpName,
+      });
+      
+      return '';
     } catch (error) {
       console.log(error);
       throw new BadRequestException('width and height are required');
     }
   }
+
+ 
 }
 
 export const resizeService = new ResizeService();

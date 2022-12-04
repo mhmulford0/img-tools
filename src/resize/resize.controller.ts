@@ -2,6 +2,7 @@ import * as core from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { resizeService } from './resize.service';
 
+
 @core.Controller('resize')
 export class ResizeController {
   @core.Post('/base64')
@@ -52,13 +53,13 @@ export class ResizeController {
 
     try {
       const mimeType = file.mimetype.split('/')[1];
-      const stream = await resizeService.file(
+      const data = await resizeService.file(
         file,
         parseInt(width),
         parseInt(height),
         mimeType,
       );
-      return new core.StreamableFile(stream);
+      return 'added';
     } catch (error) {
       console.log(error);
       throw new core.InternalServerErrorException(
