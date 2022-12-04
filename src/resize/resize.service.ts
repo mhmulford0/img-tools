@@ -24,9 +24,14 @@ interface Resizer {
 
 class ResizeService implements Resizer {
   async base64(data: Base64Data, width: number, height: number) {
+    const imgBuffer = Buffer.from(data.base64ImageData, 'base64');
+
     try {
-      const resized = await sharp(data.base64ImageData)
-        .resize({ width, height })
+      const resized = await sharp(imgBuffer)
+        .resize({
+          width,
+          height,
+        })
         .toBuffer();
       return resized.toString('base64');
     } catch (error) {
@@ -53,6 +58,7 @@ class ResizeService implements Resizer {
 
       return fileStream;
     } catch (error) {
+      console.log(error);
       throw new BadRequestException('width and height are required');
     }
   }

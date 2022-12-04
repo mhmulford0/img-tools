@@ -12,7 +12,7 @@ export class JobsService {
   async handleInterval() {
     this.logger.log('Called every 8 mins to clear files');
     for (const file of await readdir('./tmp')) {
-      unlink(path.join('./tmp', file));
+      unlink(path.join('./images', file));
     }
   }
 }
