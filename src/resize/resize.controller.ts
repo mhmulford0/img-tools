@@ -1,13 +1,13 @@
-import * as core from '@nestjs/common';
+import * as common from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { resizeService } from './resize.service';
 
 
-@core.Controller('resize')
+@common.Controller('resize')
 export class ResizeController {
-  @core.Post('/base64')
+  @common.Post('/base64')
   async Base64(
-    @core.Body() body: { imgData: string; width: number; height: number },
+    @common.Body() body: { imgData: string; width: number; height: number },
   ): Promise<{ data: string }> {
     try {
       const data = await resizeService.base64(
@@ -20,26 +20,26 @@ export class ResizeController {
       );
       return { data };
     } catch (error) {
-      throw new core.InternalServerErrorException(
+      throw new common.InternalServerErrorException(
         'Could not complete request: generic error',
       );
     }
   }
 
-  @core.Post('/file')
-  @core.UseInterceptors(FileInterceptor('file'))
-  @core.Header(
+  @common.Post('/file')
+  @common.UseInterceptors(FileInterceptor('file'))
+  @common.Header(
     'Content-Disposition',
     `attachment; filename="${Date.now().toString()}"`,
   )
   async File(
-    @core.Query('width') width: string,
-    @core.Query('height') height: string,
-    @core.UploadedFile(
-      new core.ParseFilePipe({
+    @common.Query('width') width: string,
+    @common.Query('height') height: string,
+    @common.UploadedFile(
+      new common.ParseFilePipe({
         validators: [
-          new core.MaxFileSizeValidator({ maxSize: 4e7 }),
-          new core.FileTypeValidator({
+          new common.MaxFileSizeValidator({ maxSize: 4e7 }),
+          new common.FileTypeValidator({
             fileType: RegExp(/(jpg|jpeg|png)/g),
           }),
         ],
@@ -48,7 +48,7 @@ export class ResizeController {
     file: Express.Multer.File,
   ) {
     if (typeof width === undefined || typeof height === undefined) {
-      throw new core.NotAcceptableException('Width and height required');
+      throw new common.NotAcceptableException('Width and height required');
     }
 
     try {
@@ -59,10 +59,10 @@ export class ResizeController {
         parseInt(height),
         mimeType,
       );
-      return 'added';
+      return data;
     } catch (error) {
       console.log(error);
-      throw new core.InternalServerErrorException(
+      throw new common.InternalServerErrorException(
         'Could not complete request: generic error',
       );
     }
