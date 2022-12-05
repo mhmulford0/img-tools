@@ -4,6 +4,10 @@ dotenv.config();
 import { Job, Queue, Worker } from 'bullmq';
 import sharp from 'sharp';
 
+// TODO: switch back to DO for redis.
+// ? reminder to update TLS option for
+// ? connectionOpts, redis: {tls: {} },
+
 const connectionOpts = {
   host: 'containers-us-west-133.railway.app',
   username: 'default',
