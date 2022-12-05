@@ -1,6 +1,7 @@
 import sharp from 'sharp';
 import { BadRequestException } from '@nestjs/common';
-import { queue } from 'src/main';
+import { imageQueue } from 'src/core/Queue';
+
 
 type Base64Data = {
   timestamp: number;
@@ -47,7 +48,7 @@ class ResizeService implements Resizer {
     const tmpName = Date.now().toString();
 
     try {
-      queue.add('resize-img', {
+      imageQueue.queue.add('resize-img', {
         imgData: data.buffer,
         width,
         height,
