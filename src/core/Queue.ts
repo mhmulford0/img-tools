@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
+
 import { Job, Queue, Worker } from 'bullmq';
 import sharp from 'sharp';
 

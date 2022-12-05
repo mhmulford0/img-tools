@@ -28,10 +28,6 @@ export class ResizeController {
 
   @common.Post('/file')
   @common.UseInterceptors(FileInterceptor('file'))
-  @common.Header(
-    'Content-Disposition',
-    `attachment; filename="${Date.now().toString()}"`,
-  )
   async File(
     @common.Query('width') width: string,
     @common.Query('height') height: string,
